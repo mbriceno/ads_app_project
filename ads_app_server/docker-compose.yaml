@@ -1,0 +1,54 @@
+version: '3.7'
+services:
+  # Redpanda server similar and with the same interface than Kafka (Ingest)
+  redpanda:
+    image: docker.redpanda.com/redpandadata/console:v3.3.2
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda-node:9092"]
+    ports:
+      - ${REDPANDA_CONSOLE_PORT_EXTERNAL}:${REDPANDA_CONSOLE_PORT_INTERNAL}
+    depends_on:
+      - redpanda-node
+
+  redpanda-node:
+    image: docker.redpanda.com/redpandadata/redpanda:v25.3.1
+    command:
+      - redpanda start
+      - --smp 1 
+      - --memory 1G
+      - --reserve-memory 0M
+      - --overprovisioned
+      - --set redpanda.auto_create_topics_enabled=true
+      - --kafka-addr internal://${KAFKA_NODE_IP}:${KAFKA_NODE_INTERNAL_PORT},external://${KAFKA_NODE_IP}:${KAFKA_NODE_EXTERNAL_PORT}
+      - --advertise-kafka-addr internal://redpanda-node:${KAFKA_NODE_INTERNAL_PORT},external://localhost:${KAFKA_NODE_EXTERNAL_PORT}
+    ports:
+      - ${KAFKA_NODE_EXTERNAL_PORT}:${KAFKA_NODE_EXTERNAL_PORT} # Port to connect from NestJS
+
+  # Postgres will operate has a Warehouse
+  postgres:
+    image: postgres:16.0
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+
+  # Spark server to process the data from Kafka
+  spark-job:
+    image: apache/spark:3.5.1 # Use the official image that is compatible with ARM64
+    user: root
+    volumes:
+      - ../ads_app_spark/spark_processor.py:/app/spark_processor.py
+    command: >
+      /bin/bash -c "
+        sleep 15 && /opt/spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.postgresql:postgresql:42.6.0 /app/spark_processor.py
+      "
+    depends_on:
+      - redpanda-node
+      - postgres
