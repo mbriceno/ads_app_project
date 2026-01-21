@@ -2,6 +2,9 @@
 
 This repository contains a multi-service architecture for an advertising application, split into three main components: orchestration, backend services, and data processing.
 
+<img src="./docs/architecture_design.png" alt="Architecture Diagram" width="400" />
+
+
 ## Project Structure
 
 The project is organized into the following directories:
