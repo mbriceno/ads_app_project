@@ -15,7 +15,7 @@ export class AdsStatsService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.generateFakeTraffic();
+    // this.generateFakeTraffic();
   }
 
   // 1. Simular tráfico (Ingesta)

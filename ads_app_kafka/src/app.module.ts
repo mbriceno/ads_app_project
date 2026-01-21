@@ -5,6 +5,7 @@ import { AdStatsModule } from './ads_stats/ad_stats.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AdStats } from './ads_stats/entities/ad-stats.entity';
+import { AdStatsTemp } from './ads_stats/entities/ad-stats-temp.entity';
 
 @Module({
   imports: [
@@ -21,8 +22,9 @@ import { AdStats } from './ads_stats/entities/ad-stats.entity';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [AdStats],
+        entities: [AdStats, AdStatsTemp],
         synchronize: configService.get<boolean>('DB_SYNCHRONIZE'),
+        // migrationsRun: true,
       }),
     }),
     AdStatsModule,

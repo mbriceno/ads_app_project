@@ -45,9 +45,12 @@ services:
     user: root
     volumes:
       - ../ads_app_spark/spark_processor.py:/app/spark_processor.py
+      - ../ads_app_spark/.env:/app/.env
     command: >
       /bin/bash -c "
-        sleep 15 && /opt/spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.postgresql:postgresql:42.6.0 /app/spark_processor.py
+        sleep 15 && 
+        pip install psycopg2-binary python-dotenv &&
+        /opt/spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.postgresql:postgresql:42.6.0 /app/spark_processor.py
       "
     depends_on:
       - redpanda-node

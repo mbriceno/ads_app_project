@@ -1,0 +1,10 @@
+DB_HOST=postgres
+DB_PORT=5432
+DB_USERNAME=admin
+DB_PASSWORD=
+DB_DATABASE=kafka_test
+DB_SYNCHRONIZE=false
+
+KAFKA_BOOTSTRAP_SERVERS=redpanda-node:9092
+KAFKA_INPUT_TOPIC=ad-events
+KAFKA_OUTPUT_TOPIC=ad-stats-results
